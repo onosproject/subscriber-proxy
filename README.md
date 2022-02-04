@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2019-present Open Networking Foundation <info@opennetworking.org>
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Subscriber Proxy
 
 [![Build Status](https://api.travis-ci.org/onosproject/subscriber-proxy.svg?branch=master)](https://travis-ci.org/onosproject/gnxi-simulators)
