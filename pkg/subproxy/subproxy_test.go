@@ -117,7 +117,7 @@ func TestSubscriberProxy_getDevice(t *testing.T) {
 	assert.NotNil(t, device.Enterprises.Enterprise["defaultent"].Site["defaultent-defaultsite"])
 	assert.Equal(t, "defaultent-defaultsite",
 		*device.Enterprises.Enterprise["defaultent"].Site["defaultent-defaultsite"].SiteId)
-	assert.Len(t, device.Enterprises.Enterprise["starbucks"].Site, 3)
+	assert.Len(t, device.Enterprises.Enterprise["starbucks"].Site, 2)
 	assert.Equal(t, "Seattle", *device.Enterprises.Enterprise["starbucks"].Site["starbucks-seattle"].DisplayName)
 }
 
