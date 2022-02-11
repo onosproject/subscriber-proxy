@@ -18,7 +18,6 @@ import (
 	"time"
 )
 
-
 func TestForwardReqToEndpoint(t *testing.T) {
 
 	type args struct {

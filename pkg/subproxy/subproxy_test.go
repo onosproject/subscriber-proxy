@@ -24,7 +24,7 @@ import (
 var sp = subscriberProxy{
 	AetherConfigAddress:   "onos-config.micro-onos.svc.cluster.local:5150",
 	BaseWebConsoleURL:     "http://webui.omec.svc.cluster.local:5000",
-	AetherConfigTarget:    "connectivity-service-v3",
+	AetherConfigTarget:    "connectivity-service-v2",
 	gnmiClient:            nil,
 	PostTimeout:           0,
 	retryInterval:         0,
@@ -40,37 +40,17 @@ func TestMain(m *testing.M) {
 
 func TestSubscriberProxy_addSubscriberByID(t *testing.T) {
 
-	dgJSON, err := ioutil.ReadFile("./testdata/deviceGroup.json")
-	assert.NoError(t, err)
-
-	siteJSON, err := ioutil.ReadFile("./testdata/deviceSite.json")
-	assert.NoError(t, err)
-
-	csJSON, err := ioutil.ReadFile("./testdata/deviceConnService.json")
+	dgJSON, err := ioutil.ReadFile("./testdata/device.json")
 	assert.NoError(t, err)
 
 	ctrl := gomock.NewController(t)
 	gnmiMockClient := mocks.NewMockGnmiInterface(ctrl)
 	sp.gnmiClient = gnmiMockClient
 
-	gnmiMockClient.EXPECT().GetPath(gomock.Any(), "/device-group", gomock.Any(), gomock.Any()).
+	gnmiMockClient.EXPECT().GetPath(gomock.Any(), "/enterprise", gomock.Any(), gomock.Any()).
 		DoAndReturn(func(ctx context.Context, path string, target string, addr string) (*gpb.TypedValue, error) {
 			return &gpb.TypedValue{
 				Value: &gpb.TypedValue_JsonVal{JsonVal: dgJSON},
-			}, nil
-		}).AnyTimes()
-
-	gnmiMockClient.EXPECT().GetPath(gomock.Any(), "/site", gomock.Any(), gomock.Any()).
-		DoAndReturn(func(ctx context.Context, path string, target string, addr string) (*gpb.TypedValue, error) {
-			return &gpb.TypedValue{
-				Value: &gpb.TypedValue_JsonVal{JsonVal: siteJSON},
-			}, nil
-		}).AnyTimes()
-
-	gnmiMockClient.EXPECT().GetPath(gomock.Any(), "/connectivity-service", gomock.Any(), gomock.Any()).
-		DoAndReturn(func(ctx context.Context, path string, target string, addr string) (*gpb.TypedValue, error) {
-			return &gpb.TypedValue{
-				Value: &gpb.TypedValue_JsonVal{JsonVal: csJSON},
 			}, nil
 		}).AnyTimes()
 
@@ -105,6 +85,7 @@ func TestSubscriberProxy_addSubscriberByID(t *testing.T) {
 	req, err := http.NewRequest("POST", "/api/subscriber/imsi-111222333444555", payload)
 	assert.NoError(t, err)
 	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Dest-Url", "http://webui.omec.svc.cluster.local:5000/api/subscriber")
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusCreated, w.Code)
 	resp, err := ioutil.ReadAll(w.Body)
@@ -115,84 +96,44 @@ func TestSubscriberProxy_addSubscriberByID(t *testing.T) {
 
 func TestSubscriberProxy_getDevice(t *testing.T) {
 
-	dgJSON, err := ioutil.ReadFile("./testdata/deviceGroup.json")
-	assert.NoError(t, err)
-
-	siteJSON, err := ioutil.ReadFile("./testdata/deviceSite.json")
-	assert.NoError(t, err)
-
-	csJSON, err := ioutil.ReadFile("./testdata/deviceConnService.json")
+	dgJSON, err := ioutil.ReadFile("./testdata/device.json")
 	assert.NoError(t, err)
 
 	ctrl := gomock.NewController(t)
 	gnmiMockClient := mocks.NewMockGnmiInterface(ctrl)
 	sp.gnmiClient = gnmiMockClient
 
-	gnmiMockClient.EXPECT().GetPath(gomock.Any(), "/device-group", gomock.Any(), gomock.Any()).
+	gnmiMockClient.EXPECT().GetPath(gomock.Any(), "/enterprise", gomock.Any(), gomock.Any()).
 		DoAndReturn(func(ctx context.Context, path string, target string, addr string) (*gpb.TypedValue, error) {
 			return &gpb.TypedValue{
 				Value: &gpb.TypedValue_JsonVal{JsonVal: dgJSON},
-			}, nil
-		}).AnyTimes()
-
-	gnmiMockClient.EXPECT().GetPath(gomock.Any(), "/site", gomock.Any(), gomock.Any()).
-		DoAndReturn(func(ctx context.Context, path string, target string, addr string) (*gpb.TypedValue, error) {
-			return &gpb.TypedValue{
-				Value: &gpb.TypedValue_JsonVal{JsonVal: siteJSON},
-			}, nil
-		}).AnyTimes()
-
-	gnmiMockClient.EXPECT().GetPath(gomock.Any(), "/connectivity-service", gomock.Any(), gomock.Any()).
-		DoAndReturn(func(ctx context.Context, path string, target string, addr string) (*gpb.TypedValue, error) {
-			return &gpb.TypedValue{
-				Value: &gpb.TypedValue_JsonVal{JsonVal: csJSON},
 			}, nil
 		}).AnyTimes()
 
 	device, err := sp.getDevice()
 	assert.NoError(t, err)
-	assert.NotNil(t, device.DeviceGroup)
-	assert.Len(t, device.DeviceGroup.DeviceGroup, 9)
+	assert.NotNil(t, device.Enterprises)
+	assert.Len(t, device.Enterprises.Enterprise, 3)
 	assert.Equal(t, "defaultent-defaultsite",
-		*device.DeviceGroup.DeviceGroup["defaultent-defaultsite-default"].Site)
-	assert.NotNil(t, device.Site)
-	assert.Len(t, device.Site.Site, 4)
-	assert.Equal(t, "Seattle", *device.Site.Site["starbucks-seattle"].DisplayName)
+		*device.Enterprises.Enterprise["defaultent"].Site["defaultent-defaultsite"].SiteId)
+	//assert.NotNil(t, device.Site)
+	//assert.Len(t, device.Site.Site, 4)
+	//assert.Equal(t, "Seattle", *device.Site.Site["starbucks-seattle"].DisplayName)
 }
 
 func TestSubscriberProxy_updateImsiDeviceGroup(t *testing.T) {
 
-	dgJSON, err := ioutil.ReadFile("./testdata/deviceGroup.json")
-	assert.NoError(t, err)
-
-	siteJSON, err := ioutil.ReadFile("./testdata/deviceSite.json")
-	assert.NoError(t, err)
-
-	csJSON, err := ioutil.ReadFile("./testdata/deviceConnService.json")
+	dgJSON, err := ioutil.ReadFile("./testdata/device.json")
 	assert.NoError(t, err)
 
 	ctrl := gomock.NewController(t)
 	gnmiMockClient := mocks.NewMockGnmiInterface(ctrl)
 	sp.gnmiClient = gnmiMockClient
 
-	gnmiMockClient.EXPECT().GetPath(gomock.Any(), "/device-group", gomock.Any(), gomock.Any()).
+	gnmiMockClient.EXPECT().GetPath(gomock.Any(), "/enterprise", gomock.Any(), gomock.Any()).
 		DoAndReturn(func(ctx context.Context, path string, target string, addr string) (*gpb.TypedValue, error) {
 			return &gpb.TypedValue{
 				Value: &gpb.TypedValue_JsonVal{JsonVal: dgJSON},
-			}, nil
-		}).AnyTimes()
-
-	gnmiMockClient.EXPECT().GetPath(gomock.Any(), "/site", gomock.Any(), gomock.Any()).
-		DoAndReturn(func(ctx context.Context, path string, target string, addr string) (*gpb.TypedValue, error) {
-			return &gpb.TypedValue{
-				Value: &gpb.TypedValue_JsonVal{JsonVal: siteJSON},
-			}, nil
-		}).AnyTimes()
-
-	gnmiMockClient.EXPECT().GetPath(gomock.Any(), "/connectivity-service", gomock.Any(), gomock.Any()).
-		DoAndReturn(func(ctx context.Context, path string, target string, addr string) (*gpb.TypedValue, error) {
-			return &gpb.TypedValue{
-				Value: &gpb.TypedValue_JsonVal{JsonVal: csJSON},
 			}, nil
 		}).AnyTimes()
 
@@ -206,33 +147,26 @@ func TestSubscriberProxy_updateImsiDeviceGroup(t *testing.T) {
 			return nil
 		}).AnyTimes()
 
-	// IMSI will be added to default device group under default site
+	// IMSI will be added to default site
 	imsiValue := uint64(111222333444555)
 	err = sp.updateImsiDeviceGroup(imsiValue)
 	assert.NoError(t, err)
 	assert.NotNil(t, updSetRequests)
 	assert.Len(t, updSetRequests, 1)
 
-	//IMSI already exist in device group under default site
+	//IMSI already exist in site
 	updSetRequests = nil
-	imsiValue = uint64(21032002000010)
+	imsiValue = uint64(123456001000001)
 	err = sp.updateImsiDeviceGroup(imsiValue)
 	assert.NoError(t, err)
 	assert.Len(t, updSetRequests, 0)
 
-	// IMSI will be added to device group under default site
+	// IMSI doesn't exist will be added to existing site
 	updSetRequests = nil
-	imsiValue = uint64(265122002000035)
+	imsiValue = uint64(123456001000005)
 	err = sp.updateImsiDeviceGroup(imsiValue)
 	assert.NoError(t, err)
 	assert.NotNil(t, updSetRequests)
 	assert.Len(t, updSetRequests, 1)
-
-	//IMSI exist in device group under site
-	updSetRequests = nil
-	imsiValue = uint64(21032002000040)
-	err = sp.updateImsiDeviceGroup(imsiValue)
-	assert.NoError(t, err)
-	assert.Len(t, updSetRequests, 0)
 
 }

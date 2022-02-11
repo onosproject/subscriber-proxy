@@ -67,10 +67,10 @@ func (s *subscriberProxy) addSubscriberByID(c *gin.Context) {
 	}
 
 	//Get destination url from the header
-	destUrl := c.Request.Header.Get("Dest-Url")
-	log.Infof("Destination URL : ", destUrl)
+	destURL := c.Request.Header.Get("Dest-Url")
+	log.Infof("Destination URL : ", destURL)
 
-	if destUrl == "" {
+	if destURL == "" {
 		jsonByte, okay := getJSONResponse("No Target URL received from SimApp")
 		if okay != nil {
 			log.Warn(err.Error())
@@ -79,7 +79,7 @@ func (s *subscriberProxy) addSubscriberByID(c *gin.Context) {
 		return
 	}
 
-	resp, err := ForwardReqToEndpoint(destUrl, payload, s.PostTimeout)
+	resp, err := ForwardReqToEndpoint(destURL, payload, s.PostTimeout)
 	if err != nil {
 		jsonByte, okay := getJSONResponse(err.Error())
 		if okay != nil {
@@ -186,7 +186,7 @@ func (s *subscriberProxy) updateImsiDeviceGroup(imsi uint64) error {
 		log.Infof("Sim with imsi %u already exists", imsi)
 		return nil
 	}
-	//find the Site for the imsi if is no site found then it will added to default site under default enterprize
+	//find the Site for the imsi if is no site found then it will added to default site under default enterprise
 	ent, site, err := findSiteForTheImsi(device, imsi)
 	if err != nil {
 		return err

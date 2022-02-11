@@ -28,14 +28,12 @@ ifdef LOCAL_AETHER_MODELS
 endif
 
 deps: # @HELP ensure that the required dependencies are in place
-	# TODO: Skipping subscriber-proxy tests until they're updated
 	GOPRIVATE="github.com/onosproject/*" go build -v `go list ./... `
 	bash -c "diff -u <(echo -n) <(git diff go.mod)"
 	bash -c "diff -u <(echo -n) <(git diff go.sum)"
 
 linters: golang-ci # @HELP examines Go source code and reports coding problems
-	# TODO: disabled for subscriber proxy test
-	golangci-lint run --timeout 5m --skip-files subproxy_test.go
+	golangci-lint run --timeout 5m
 
 build-tools: # @HELP install the ONOS build tools if needed
 	@if [ ! -d "../build-tools" ]; then cd .. && git clone https://github.com/onosproject/build-tools.git; fi
