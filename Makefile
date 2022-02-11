@@ -34,7 +34,7 @@ deps: # @HELP ensure that the required dependencies are in place
 	bash -c "diff -u <(echo -n) <(git diff go.sum)"
 
 linters: golang-ci # @HELP examines Go source code and reports coding problems
-	# TODO: disabled subscriber proxy linter
+	# TODO: disabled for subscriber proxy test
 	golangci-lint run --timeout 5m --skip-files subproxy_test.go
 
 build-tools: # @HELP install the ONOS build tools if needed
@@ -54,7 +54,7 @@ build: local-aether-models
 	go build -o build/_output/subscriber-proxy ./cmd/subscriber-proxy
 
 # @HELP run various tests
-test: build unit-test deps license_check linters images
+test: build unit-test deps license_check linters
 
 # @HELP run init tests
 unit-test:
