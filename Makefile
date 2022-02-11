@@ -63,7 +63,7 @@ unit-test:
 # go test -cover -race `go list github.com/onosproject/subscriber-proxy/cmd/...`
 
 jenkins-test:  # @HELP run the unit tests and source code validation producing a junit style report for Jenkins
-jenkins-test: build deps license_check linters images jenkins-tools
+jenkins-test: build deps license_check linters jenkins-tools
 	TEST_PACKAGES=`go list github.com/onosproject/subscriber-proxy/... ` ./../build-tools/build/jenkins/make-unit
 
 subscriber-proxy-docker: local-aether-models
