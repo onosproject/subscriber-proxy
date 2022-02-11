@@ -114,11 +114,11 @@ func TestSubscriberProxy_getDevice(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, device.Enterprises)
 	assert.Len(t, device.Enterprises.Enterprise, 3)
+	assert.NotNil(t, device.Enterprises.Enterprise["defaultent"].Site["defaultent-defaultsite"])
 	assert.Equal(t, "defaultent-defaultsite",
 		*device.Enterprises.Enterprise["defaultent"].Site["defaultent-defaultsite"].SiteId)
-	//assert.NotNil(t, device.Site)
-	//assert.Len(t, device.Site.Site, 4)
-	//assert.Equal(t, "Seattle", *device.Site.Site["starbucks-seattle"].DisplayName)
+	assert.Len(t, device.Enterprises.Enterprise["starbucks"].Site, 3)
+	assert.Equal(t, "Seattle", *device.Enterprises.Enterprise["starbucks"].Site["starbucks-seattle"].DisplayName)
 }
 
 func TestSubscriberProxy_updateImsiDeviceGroup(t *testing.T) {
