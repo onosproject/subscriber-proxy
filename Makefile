@@ -12,7 +12,7 @@ export GO111MODULE=on
 
 KIND_CLUSTER_NAME           ?= kind
 DOCKER_REPOSITORY           ?= onosproject/
-ONOS_SDCORE_ADAPTER_VERSION ?= latest
+ONOS_SUBSCRIBER_PROXY_VERSION ?= latest
 LOCAL_AETHER_MODELS         ?=
 
 all: build images
@@ -67,7 +67,7 @@ jenkins-test: build deps license_check linters jenkins-tools
 subscriber-proxy-docker: local-aether-models
 	docker build . -f Dockerfile \
 	--build-arg LOCAL_AETHER_MODELS=${LOCAL_AETHER_MODELS} \
-	-t ${DOCKER_REPOSITORY}subscriber-proxy:${ONOS_SDCORE_ADAPTER_VERSION}
+	-t ${DOCKER_REPOSITORY}subscriber-proxy:${ONOS_SUBSCRIBER_PROXY_VERSION}
 
 kind: # @HELP build Docker images and add them to the currently configured kind cluster
 kind: images kind-only
@@ -75,13 +75,13 @@ kind: images kind-only
 kind-only: # @HELP deploy the image without rebuilding first
 kind-only:
 	@if [ "`kind get clusters`" = '' ]; then echo "no kind cluster found" && exit 1; fi
-	kind load docker-image --name ${KIND_CLUSTER_NAME} ${DOCKER_REPOSITORY}subscriber-proxy:${ONOS_SDCORE_ADAPTER_VERSION}
+	kind load docker-image --name ${KIND_CLUSTER_NAME} ${DOCKER_REPOSITORY}subscriber-proxy:${ONOS_SUBSCRIBER_PROXY_VERSION}
 
 publish: # @HELP publish version on github and dockerhub
 	./../build-tools/publish-version ${VERSION} onosproject/subscriber-proxy
 
 jenkins-publish: build-tools jenkins-tools # @HELP Jenkins calls this to publish artifacts
-	../build-tools/build/bin/push-images
+	./build/bin/push-images
 	../build-tools/release-merge-commit
 
 clean: # @HELP remove all the build artifacts
