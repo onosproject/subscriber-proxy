@@ -221,10 +221,10 @@ func (s *subscriberProxy) addSimObjectToSite(site *models.OnfEnterprise_Enterpri
 		updStr = fmt.Sprintf("sim-card[sim-id=%s]/description", *sim.SimId)
 		updates = gnmiclient.AddUpdate(updates, gnmiclient.UpdateString(updStr, s.AetherConfigTarget, sim.Description))
 		updStr = fmt.Sprintf("sim-card[sim-id=%s]/iccid", *sim.SimId)
-		updates = gnmiclient.AddUpdate(updates, gnmiclient.UpdateUInt64(updStr, s.AetherConfigTarget, sim.Iccid))
+		updates = gnmiclient.AddUpdate(updates, gnmiclient.UpdateString(updStr, s.AetherConfigTarget, sim.Iccid))
 	}
 
-	iccid := uint64(1234)                   //TODO see how we can get this value
+	iccid := ""                             //TODO see how we can get this value
 	simID := fmt.Sprintf("sim-%d", noOfSim) //TODO need to have concrete logic for unique name
 	simDisplayName := fmt.Sprintf("Sim-%d", noOfSim)
 	simDescription := fmt.Sprintf("Sim-%d description", noOfSim)
@@ -236,7 +236,7 @@ func (s *subscriberProxy) addSimObjectToSite(site *models.OnfEnterprise_Enterpri
 	updStr = fmt.Sprintf("sim-card[sim-id=%s]/description", simID)
 	updates = gnmiclient.AddUpdate(updates, gnmiclient.UpdateString(updStr, s.AetherConfigTarget, &simDescription))
 	updStr = fmt.Sprintf("sim-card[sim-id=%s]/iccid", simID)
-	updates = gnmiclient.AddUpdate(updates, gnmiclient.UpdateUInt64(updStr, s.AetherConfigTarget, &iccid))
+	updates = gnmiclient.AddUpdate(updates, gnmiclient.UpdateString(updStr, s.AetherConfigTarget, &iccid))
 
 	// Apply them
 	err := s.gnmiClient.Update(s.gnmiContext, prefix, s.AetherConfigTarget, s.AetherConfigAddress, updates)
