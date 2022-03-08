@@ -56,9 +56,8 @@ test: build unit-test deps license_check linters
 
 # @HELP run init tests
 unit-test:
-# TODO: Skipping subscriber-proxy tests until they're updated
-# go test -cover -race `go list github.com/onosproject/subproxy/pkg/...`
-# go test -cover -race `go list github.com/onosproject/subscriber-proxy/cmd/...`
+	go test -cover -race `go list github.com/onosproject/subscriber-proxy/pkg/...`
+	go test -cover -race `go list github.com/onosproject/subscriber-proxy/cmd/...`
 
 jenkins-test:  # @HELP run the unit tests and source code validation producing a junit style report for Jenkins
 jenkins-test: build deps license_check linters jenkins-tools
