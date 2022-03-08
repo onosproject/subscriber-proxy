@@ -24,6 +24,7 @@ func TestForwardReqToEndpoint(t *testing.T) {
 		postURI     string
 		payload     []byte
 		postTimeout time.Duration
+		method      string
 	}
 	tests := []struct {
 		name string
@@ -35,6 +36,7 @@ func TestForwardReqToEndpoint(t *testing.T) {
 				postURI:     "http://config4g:5000/api/subscriber/imsi-208014567891201",
 				payload:     []byte("{\"plmnID\":\"20893\",\"ueId\":\"imsi-208014567891201\",\"OPc\":\"8e27b6af0e692e750f32667a3b14605d\",\"key\":\"8baf473f2f8fd09487cccbd7097c6862\",\"sequenceNumber\":\"16f3b3f70fc2\",\"DNN\": \"internet\"}"),
 				postTimeout: 1 * time.Second,
+				method:      http.MethodPost,
 			}, 201,
 		},
 		{"5gurl",
@@ -42,7 +44,16 @@ func TestForwardReqToEndpoint(t *testing.T) {
 				postURI:     "http://webui:5000/api/subscriber/imsi-208014567891201",
 				payload:     []byte("{\"plmnID\":\"20893\",\"ueId\":\"imsi-208014567891201\",\"OPc\":\"8e27b6af0e692e750f32667a3b14605d\",\"key\":\"8baf473f2f8fd09487cccbd7097c6862\",\"sequenceNumber\":\"16f3b3f70fc2\",\"DNN\": \"internet\"}"),
 				postTimeout: 1 * time.Second,
+				method:      http.MethodPost,
 			}, 201,
+		},
+		{"delurl",
+			args{
+				postURI:     "http://webui:5000/api/subscriber/imsi-208014567891201",
+				payload:     []byte("{\"plmnID\":\"20893\",\"ueId\":\"imsi-208014567891201\",\"OPc\":\"8e27b6af0e692e750f32667a3b14605d\",\"key\":\"8baf473f2f8fd09487cccbd7097c6862\",\"sequenceNumber\":\"16f3b3f70fc2\",\"DNN\": \"internet\"}"),
+				postTimeout: 1 * time.Second,
+				method:      http.MethodDelete,
+			}, 200,
 		},
 	}
 
@@ -57,14 +68,18 @@ func TestForwardReqToEndpoint(t *testing.T) {
 
 				log.Infof(" from Http mock client ...%v", req.URL)
 				assert.Equal(t, tt.args.postURI, fmt.Sprintf("%v", req.URL))
+				statusCode := 201
+				if tt.args.method == http.MethodDelete {
+					statusCode = 200
+				}
 				return &http.Response{
-					StatusCode: 201,
+					StatusCode: statusCode,
 					Body:       respMock,
 					Header:     make(http.Header),
 				}, nil
 			}).AnyTimes()
 
-			got, err := ForwardReqToEndpoint(tt.args.postURI, tt.args.payload, tt.args.postTimeout)
+			got, err := ForwardReqToEndpoint(tt.args.postURI, tt.args.payload, tt.args.postTimeout, tt.args.method)
 			if err != nil {
 				t.Errorf("ForwardReqToEndpoint() error = %v", err)
 				return

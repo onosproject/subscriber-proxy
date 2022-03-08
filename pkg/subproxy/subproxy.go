@@ -79,7 +79,7 @@ func (s *subscriberProxy) addSubscriberByID(c *gin.Context) {
 		return
 	}
 
-	resp, err := ForwardReqToEndpoint(destURL, payload, s.PostTimeout)
+	resp, err := ForwardReqToEndpoint(destURL, payload, s.PostTimeout, http.MethodPost)
 	if err != nil {
 		jsonByte, okay := getJSONResponse(err.Error())
 		if okay != nil {
@@ -140,7 +140,7 @@ func (s *subscriberProxy) delSubscriberByID(c *gin.Context) {
 		return
 	}
 
-	resp, err := ForwardReqToEndpoint(destURL, payload, s.PostTimeout)
+	resp, err := ForwardReqToEndpoint(destURL, payload, s.PostTimeout, http.MethodDelete)
 	if err != nil {
 		jsonByte, okay := getJSONResponse(err.Error())
 		if okay != nil {
