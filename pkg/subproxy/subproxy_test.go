@@ -154,6 +154,17 @@ func TestSubscriberProxy_updateImsiDeviceGroup(t *testing.T) {
 	assert.NotNil(t, updSetRequests)
 	assert.Len(t, updSetRequests, 1)
 
+	assert.Len(t, updSetRequests[0].Update, 7)
+
+	assert.Equal(t, updSetRequests[0].Update[0].Val.Value, &gpb.TypedValue_StringVal{StringVal: "Sim-1"})
+	assert.Equal(t, updSetRequests[0].Update[1].Val.Value, &gpb.TypedValue_UintVal{UintVal: uint64(210320020000002)})
+	assert.Equal(t, updSetRequests[0].Update[2].Val.Value, &gpb.TypedValue_StringVal{StringVal: "Sim-1 description"})
+	assert.Equal(t, updSetRequests[0].Update[3].Val.Value, &gpb.TypedValue_StringVal{StringVal: "1234"})
+	assert.Equal(t, updSetRequests[0].Update[4].Val.Value, &gpb.TypedValue_StringVal{StringVal: "Sim-2"})
+	assert.Equal(t, updSetRequests[0].Update[5].Val.Value, &gpb.TypedValue_UintVal{UintVal: uint64(111222333444555)})
+	assert.Equal(t, updSetRequests[0].Update[6].Val.Value, &gpb.TypedValue_StringVal{StringVal: "Sim-2 description"})
+	//	assert.Equal(t, updSetRequests[0].Update[7].Val.Value, &gpb.TypedValue_StringVal{StringVal: "1234"})
+
 	//IMSI already exist in site
 	updSetRequests = nil
 	imsiValue = uint64(123456001000001)
@@ -168,5 +179,19 @@ func TestSubscriberProxy_updateImsiDeviceGroup(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, updSetRequests)
 	assert.Len(t, updSetRequests, 1)
+
+	assert.Len(t, updSetRequests[0].Update, 11)
+	assert.Equal(t, updSetRequests[0].Update[0].Val.Value, &gpb.TypedValue_StringVal{StringVal: "Robot 1 Sim"})
+	assert.Equal(t, updSetRequests[0].Update[1].Val.Value, &gpb.TypedValue_UintVal{UintVal: uint64(123456001000001)})
+	assert.Equal(t, updSetRequests[0].Update[2].Val.Value, &gpb.TypedValue_StringVal{StringVal: "Robot 1 Sim Card"})
+	assert.Equal(t, updSetRequests[0].Update[3].Val.Value, &gpb.TypedValue_StringVal{StringVal: "123401"})
+	assert.Equal(t, updSetRequests[0].Update[4].Val.Value, &gpb.TypedValue_StringVal{StringVal: "Robot 2 Sim"})
+	assert.Equal(t, updSetRequests[0].Update[5].Val.Value, &gpb.TypedValue_UintVal{UintVal: uint64(123456001000002)})
+	assert.Equal(t, updSetRequests[0].Update[6].Val.Value, &gpb.TypedValue_StringVal{StringVal: "Robot 2 Sim Card"})
+	assert.Equal(t, updSetRequests[0].Update[7].Val.Value, &gpb.TypedValue_StringVal{StringVal: "123402"})
+	assert.Equal(t, updSetRequests[0].Update[8].Val.Value, &gpb.TypedValue_StringVal{StringVal: "Sim-3"})
+	assert.Equal(t, updSetRequests[0].Update[9].Val.Value, &gpb.TypedValue_UintVal{UintVal: uint64(123456001000005)})
+	assert.Equal(t, updSetRequests[0].Update[10].Val.Value, &gpb.TypedValue_StringVal{StringVal: "Sim-3 description"})
+	//	assert.Equal(t, updSetRequests[0].Update[11].Val.Value, &gpb.TypedValue_UintVal{UintVal: uint64(1234)})
 
 }
