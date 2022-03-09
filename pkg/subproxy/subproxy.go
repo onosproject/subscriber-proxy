@@ -79,7 +79,7 @@ func (s *subscriberProxy) addSubscriberByID(c *gin.Context) {
 		return
 	}
 
-	resp, err := ForwardReqToEndpoint(destURL, payload, s.PostTimeout)
+	resp, err := ForwardReqToEndpoint(destURL, payload, s.PostTimeout, http.MethodPost)
 	if err != nil {
 		jsonByte, okay := getJSONResponse(err.Error())
 		if okay != nil {
@@ -107,6 +107,65 @@ func (s *subscriberProxy) addSubscriberByID(c *gin.Context) {
 		return
 	}
 
+	c.JSON(resp.StatusCode, gin.H{"status": "success"})
+}
+
+//delSubscriberByID
+func (s *subscriberProxy) delSubscriberByID(c *gin.Context) {
+	log.Infof("Received Del Subscriber Data")
+	ueID := c.Param("ueId")
+	var payload []byte
+	if c.Request.Body != nil {
+		payload, _ = ioutil.ReadAll(c.Request.Body)
+	}
+
+	if !strings.HasPrefix(ueID, "imsi-") {
+		log.Warn("Ue Id format is invalid ")
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
+	log.Infof("Received subscriber id : %s ", ueID)
+
+	//Get destination url from the header
+	destURL := c.Request.Header.Get("Dest-Url")
+	log.Infof("Destination URL : ", destURL)
+
+	if destURL == "" {
+		jsonByte, okay := getJSONResponse("No Target URL received from SimApp")
+		if okay != nil {
+			log.Warn(okay.Error())
+		}
+		c.Data(http.StatusInternalServerError, "application/json", jsonByte)
+		return
+	}
+
+	resp, err := ForwardReqToEndpoint(destURL, payload, s.PostTimeout, http.MethodDelete)
+	if err != nil {
+		jsonByte, okay := getJSONResponse(err.Error())
+		if okay != nil {
+			log.Warn(err.Error())
+		}
+		c.Data(http.StatusInternalServerError, "application/json", jsonByte)
+		return
+	}
+	if resp.StatusCode != 200 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			jsonByte, okay := getJSONResponse(err.Error())
+			if okay != nil {
+				log.Warn(err.Error())
+			}
+			c.Data(http.StatusInternalServerError, "application/json", jsonByte)
+			return
+		}
+		bodyBytes, err = getJSONResponse(string(bodyBytes))
+		if err != nil {
+			log.Warn(err.Error())
+		}
+		c.Data(resp.StatusCode, "application/json", bodyBytes)
+		return
+	}
 	c.JSON(resp.StatusCode, gin.H{"status": "success"})
 }
 
@@ -252,6 +311,7 @@ func (s *subscriberProxy) StartSubscriberProxy(bindPort string, path string) err
 	router := gin.New()
 	router.Use(getlogger(), gin.Recovery())
 	router.POST(path, getlogger(), s.addSubscriberByID)
+	router.DELETE(path, getlogger(), s.delSubscriberByID)
 	err := router.Run("0.0.0.0" + bindPort)
 	if err != nil {
 		return err

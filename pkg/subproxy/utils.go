@@ -109,14 +109,27 @@ func checkIfSimCardExist(device *models.Device, imsi uint64) bool {
 }
 
 // ForwardReqToEndpoint will Call webui API for subscriber provision on the SD-Core
-func ForwardReqToEndpoint(postURI string, payload []byte, postTimeout time.Duration) (*http.Response, error) {
-	log.Info("Post URI :  ", postURI)
-	req, err := http.NewRequest("POST", postURI, bytes.NewBuffer(payload))
-	if err != nil {
-		return nil, errors.NewInvalid("Error while connecting  ", err.Error())
+func ForwardReqToEndpoint(destURL string, payload []byte, postTimeout time.Duration, method string) (*http.Response, error) {
+	log.Info("Forwarding Dest URI :  ", destURL)
+
+	var req *http.Request
+	var err error
+	if method == http.MethodPost {
+		req, err = http.NewRequest(method, destURL, bytes.NewBuffer(payload))
+		if err != nil {
+			return nil, errors.NewInvalid("Error while connecting  ", err.Error())
+		}
+		req.Header.Add("Accept", "application/json")
+		req.Header.Add("Content-Type", "application/json")
+	} else if method == http.MethodDelete {
+		req, err = http.NewRequest(method, destURL, nil)
+		if err != nil {
+			return nil, errors.NewInvalid("Error while connecting  ", err.Error())
+		}
+	} else {
+		return nil, errors.NewInvalid("Method not support ", method)
 	}
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Content-Type", "application/json")
+
 	resp, err := clientHTTP.Do(req)
 	if err != nil {
 		log.Error("Error forwarding request ", err.Error())

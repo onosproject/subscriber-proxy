@@ -94,6 +94,39 @@ func TestSubscriberProxy_addSubscriberByID(t *testing.T) {
 	assert.Equal(t, "{\"status\":\"success\"}", string(resp))
 }
 
+func TestSubscriberProxy_delSubscriberByID(t *testing.T) {
+
+	ctrl := gomock.NewController(t)
+	respMock := ioutil.NopCloser(bytes.NewReader([]byte(`{}`)))
+	httpMockClient := mocks.NewMockHTTPClient(ctrl)
+
+	httpMockClient.EXPECT().Do(gomock.Any()).DoAndReturn(func(*http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: 200,
+			Body:       respMock,
+		}, nil
+	}).AnyTimes()
+
+	clientHTTP = httpMockClient
+	w := httptest.NewRecorder()
+	router := gin.New()
+	router.Use(getlogger(), gin.Recovery())
+	router.DELETE("/api/subscriber/:ueId", sp.delSubscriberByID)
+	payload := strings.NewReader(`{` + "" + `"plmnID": "26512",` + "" + `"ueId": "imsi-111222333444555",` + "" + `
+	"OPc": "8e27b6af0e692e750f32667a3b14605d",` + "" + `"key": "8baf473f2f8fd09487cccbd7097c6862",` + "" + `
+	"sequenceNumber": "16f3b3f70fc2",` + "" + `"DNN": "internet "` + "" + `}`)
+	req, err := http.NewRequest("DELETE", "/api/subscriber/imsi-111222333444555", payload)
+	assert.NoError(t, err)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Dest-Url", "http://webui.omec.svc.cluster.local:5000/api/subscriber")
+	router.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	resp, err := ioutil.ReadAll(w.Body)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, "{\"status\":\"success\"}", string(resp))
+}
+
 func TestSubscriberProxy_getDevice(t *testing.T) {
 
 	dgJSON, err := ioutil.ReadFile("./testdata/device.json")
