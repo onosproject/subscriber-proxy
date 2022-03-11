@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/onosproject/onos-lib-go/pkg/logging"
+	"github.com/onosproject/subscriber-proxy/internal/pkg/version"
 	"github.com/onosproject/subscriber-proxy/pkg/subproxy"
 	"os"
 	"time"
@@ -33,6 +34,9 @@ func main() {
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+
+	log.Infof("subscriber-proxy")
+	version.LogVersion("  ")
 
 	proxy := subproxy.NewSubscriberProxy(*aetherConfigTarget, *baseWebConsoleURL, *aetherConfigAddr, *postTimeout)
 
