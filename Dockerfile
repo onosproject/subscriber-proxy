@@ -1,6 +1,12 @@
 FROM onosproject/golang-build:v0.6.10 as build
 
 ARG LOCAL_AETHER_MODELS
+ARG org_label_schema_version=unknown
+ARG org_label_schema_vcs_url=unknown
+ARG org_label_schema_vcs_ref=unknown
+ARG org_label_schema_build_date=unknown
+ARG org_opencord_vcs_commit_date=unknown
+ARG org_opencord_vcs_dirty=unknown
 
 ENV ADAPTER_ROOT=$GOPATH/src/github.com/onosproject/subscriber-proxy
 ENV CGO_ENABLED=0
@@ -19,7 +25,16 @@ RUN if [ -n "$LOCAL_AETHER_MODELS" ] ; then \
 RUN cat $ADAPTER_ROOT/go.mod
 
 
-RUN cd $ADAPTER_ROOT && GO111MODULE=on go build -o /go/bin/subscriber-proxy ./cmd/subscriber-proxy
+RUN cd $ADAPTER_ROOT && GO111MODULE=on go build -o /go/bin/subscriber-proxy \
+        -ldflags \
+        "-X github.com/onosproject/subscriber-proxy/internal/pkg/version.Version=$org_label_schema_version \
+         -X github.com/onosproject/subscriber-proxy/internal/pkg/version.GitCommit=$org_label_schema_vcs_ref  \
+         -X github.com/onosproject/subscriber-proxy/internal/pkg/version.GitDirty=$org_opencord_vcs_dirty \
+         -X github.com/onosproject/subscriber-proxy/internal/pkg/version.GoVersion=$(go version 2>&1 | sed -E  's/.*go([0-9]+\.[0-9]+\.[0-9]+).*/\1/g') \
+         -X github.com/onosproject/subscriber-proxy/internal/pkg/version.Os=$(go env GOHOSTOS) \
+         -X github.com/onosproject/subscriber-proxy/internal/pkg/version.Arch=$(go env GOHOSTARCH) \
+         -X github.com/onosproject/subscriber-proxy/internal/pkg/version.BuildTime=$org_label_schema_build_date" \
+         ./cmd/subscriber-proxy
 
 FROM alpine:3.11
 RUN apk add bash openssl curl libc6-compat
