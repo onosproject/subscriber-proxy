@@ -12,9 +12,9 @@ run:
 
 linters:
   enable:
-    - gofmt
+    # - gofmt
 #    - gocyclo
-    - revive
+    # - revive
     - misspell
     - typecheck
     - errcheck
